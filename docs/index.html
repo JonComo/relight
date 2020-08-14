@@ -10,10 +10,18 @@
     font-weight: 300;
     font-family: 'Open Sans', sans-serif;
     color: #ffffff;
-    background-color: rgb(22, 22, 22);
+    background-color: rgb(0, 0, 0);
   }
   h1, h2, h3, h4 {
     font-family: 'Source Sans Pro', sans-serif;
+  }
+  pre code {
+  background-color: rgb(43, 43, 43);
+  border: 1px solid #999;
+  display: table;
+  padding: 10px;
+  color:#ffffff;
+  font-size: large;
   }
 </style>
 <title>CS 184: Neural Based Image Relighting</title>
@@ -62,6 +70,13 @@
   coordinates to be [-1,1] to avoid covariate shift. We then trained the network with 200 epochs with 
   the gradient updated after every batch.</p>
 
+  <div align="middle">
+    <img src="images/acts.png" align="middle" width="700px"/>
+    <figcaption align="middle">Different activation functions we used in each model. <a href=https://towardsdatascience.com/complete-guide-of-activation-functions-34076e95d044>source</a></figcaption>
+    </div>
+    <br>
+  
+
   <p>Although this basic pixel-based approach is remarkable at learning the mapping 
     between the inputs and the pixel values, it takes a long time to train a good model. 
     For speeding up the learning, we implemented the adaptive clustering algorithm suggested by the paper. 
@@ -77,14 +92,15 @@
     and use these n clusters as the ensemble neural networks of the pixel. Following from the paper, 
     we calculated the number of clusters in the finest-grained level as below:</p>
 
-    <code>
-    num_weights = 5 * 16 + 16 * 16 + 16 * 16 + 16
-    num_images = 120
-    num_pixels = im_size * im_size
-    lv0_num_clus = int(num_pixels / 25 * num_weights / num_images)
-    lv1_num_clus = lv0_num_clus / 4
-    lvn_num_clus = lv(n-1)_num_clus / 4
-    </code>
+
+<pre><code>num_weights = 5 * 16 + 16 * 16 + 16 * 16 + 16
+num_images = 120
+num_pixels = im_size * im_size
+lv0_num_clus = int(num_pixels / 25 * num_weights / num_images)
+lv1_num_clus = lv0_num_clus / 4
+lvn_num_clus = lv(n-1)_num_clus / 4
+</code>
+</pre>
 
   <p>With the known number of clusters, we then randomly sampled the uniform square to 
     map them into pixel coordinates. We found that training converged much quicker when using 
