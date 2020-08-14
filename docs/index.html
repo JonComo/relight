@@ -9,21 +9,27 @@
     text-align: left;
     font-weight: 300;
     font-family: 'Open Sans', sans-serif;
-    color: #ffffff;
-    background-color: rgb(0, 0, 0);
+    color: #000000;
   }
   h1, h2, h3, h4 {
     font-family: 'Source Sans Pro', sans-serif;
   }
-  pre code {
-  background-color: rgb(43, 43, 43);
-  border: 1px solid #999;
-  display: table;
-  padding: 10px;
-  color:#ffffff;
-  font-size: large;
+  figcaption {
+    font-size: small;
   }
+  td {
+    width: 400px;
+  }
+  p {
+  text-indent: 30px;
+}
 </style>
+
+<link rel="stylesheet"
+      href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/styles/hopscotch.min.css">
+<script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
 <title>CS 184: Neural Based Image Relighting</title>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 <link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
@@ -72,7 +78,7 @@
 
   <div align="middle">
     <img src="images/acts.png" align="middle" width="700px"/>
-    <figcaption align="middle">Different activation functions we used in each model. <a href=https://towardsdatascience.com/complete-guide-of-activation-functions-34076e95d044>source</a></figcaption>
+    <figcaption align="middle">Different activation functions we used in each model. <a href="https://towardsdatascience.com/complete-guide-of-activation-functions-34076e95d044">source</a></figcaption>
     </div>
     <br>
   
@@ -93,12 +99,14 @@
     we calculated the number of clusters in the finest-grained level as below:</p>
 
 
-<pre><code>num_weights = 5 * 16 + 16 * 16 + 16 * 16 + 16
-num_images = 120
-num_pixels = im_size * im_size
-lv0_num_clus = int(num_pixels / 25 * num_weights / num_images)
-lv1_num_clus = lv0_num_clus / 4
-lvn_num_clus = lv(n-1)_num_clus / 4
+<pre><code class="python">
+  num_weights = 5 * 16 + 16 * 16 + 16 * 16 + 16 # add up weights
+  num_images = 120 # training set
+  num_pixels = im_size * im_size # pixels per image
+  lv0_num_clus = int(num_pixels / 25 * num_weights / num_images)
+  lv1_num_clus = lv0_num_clus / 4
+  lvn_num_clus = lv(n-1)_num_clus / 4
+
 </code>
 </pre>
 
@@ -123,11 +131,17 @@ lvn_num_clus = lv(n-1)_num_clus / 4
 
 
   <p>In order to compare the pixel based approach to other methods, we next attempted to utilize 
-  Deep Convolutional Generative Adversarial Networks (DCGANs) [paper]. These trainable models have 
+  Deep Convolutional Generative Adversarial Networks (DCGANs) [<a href="https://arxiv.org/pdf/1511.06434.pdf">paper</a>]. These trainable models have 
   seen success in generating natural images through the clever use of two networks, a generator and discriminator, 
   that simultaneously try to generate and discern between real and fake images. To better exploit the 2-dimensional 
   data (per channel) in images, we used convolutional neural networks, consisting of learnable 2D filters 
   which are convolved with input images to produce further activation maps.</p>
+
+  <div align="middle">
+    <img src="images/dcgan.png" align="middle" width="700px"/>
+    <figcaption align="middle">DCGAN architecture. <a href="https://gluon.mxnet.io/chapter14_generative-adversarial-networks/dcgan.html">source</a></figcaption>
+    </div>
+    <br>
   
   <p>To attempt relighting a scene with DCGANs, we first trained the architecture to merely recreate data 
   from the dataset. As we train, the generator network improves its ability to generate fake images of 
@@ -140,8 +154,31 @@ lvn_num_clus = lv(n-1)_num_clus / 4
   just two parameters, the x and y coordinates of the single point light in the plane, we chose to make z 
   2-dimensional. We then explored the latent space by trying different values of the z vector. Incredibly, 
   the dimensions of z came to represent the x and y coordinates of the light. You can see below that as we 
-  explore the latent space of images the high dimensional output follows naturally: [cube_high_res_200_epoch.mov] [bball_200.mov]. </p>
+  explore the latent space of images the high dimensional output follows naturally. </p>
     
+  <table>
+    <tbody>
+    <tr>
+    <td>
+        <video src="videos/bball_200.mov" width="300" autoplay controls>
+          Your browser does not support the video tag.
+        </video>
+        <figcaption>GAN generated basketball after 200 epochs. Notice the shadows on the floor seem to follow a pattern based
+          on light location, though shadows on the ball appear slightly "spotty" and don't reflect the smooth shadows of the dataset.
+        </figcaption>
+    </td>
+    <td>
+      <video src="videos/cube_high_res_200_epoch.mov" width="300" autoplay controls>
+        Your browser does not support the video tag.
+      </video>
+      <figcaption>GAN generated cube after 200 epochs. The distribution of images clearly captured light and dark faces based on
+        light location, though the resulting image suffers from noise. 
+      </figcaption>
+    </td>
+    </tr>
+    </tbody>
+    </table>
+      
 
 <p>One issue we faced while using GANs was a large amount of noise in our resulting images. 
   To determine if this was due to the generator and discriminator architectures or the GANs themselves 
@@ -157,17 +194,92 @@ lvn_num_clus = lv(n-1)_num_clus / 4
   Reshaping the output and displaying it as an image reveals near noiseless reconstruction. 
   On images with complex shadows or interesting textures the results looked promising [plant output] [basketball output] [trailer output]. </p>
 
+  <table>
+    <tbody>
+    <tr>
+    <td>
+        <video src="videos/wagon_generator_only.mov" width="300" autoplay controls>
+          Your browser does not support the video tag.
+        </video>
+        <figcaption>Fully connected network generated after 100 epochs of training.</figcaption>
+    </td>
+    <td>
+      <video src="videos/plant_generator_only_100epoch_256hidden.mov" width="300" autoplay controls>
+        Your browser does not support the video tag.
+      </video>
+      <figcaption>Fully connected network generated after 100 epochs of training.
+      </figcaption>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <video src="videos/basketball_generator_only_100epoch.mov" width="300" autoplay controls>
+        Your browser does not support the video tag.
+      </video>
+      <figcaption>Fully connected network generated after 100 epochs of training. Note the specular highlights
+        are part of the basketball's texture, so the network could not learn to alter them as they were fixed.
+      </figcaption>
+    </td>
+    <td>
+      <video src="videos/face_generator_only_100epoch.mov" width="300" autoplay controls>
+        Your browser does not support the video tag.
+      </video>
+      <figcaption>Fully connected network generated after 100 epochs of training.
+      </figcaption>
+    </td>
+    </tr>
+    </tbody>
+    </table>
+
   <p>To determine if this method was generalizing across lighting conditions we 
   then tested it on a difficult indoor scene using a reduced dataset with many missing images. 
   Unfortunately, the model failed to generalize between lighting conditions and instead began 
-  predicting the mean image which is a common failure case of using a mean squared error function. 
-  To address this problem we used a different loss, known as the Structural SIMilarity (SSIM) index, 
+  predicting the mean image which is a common failure case of using a mean squared error function. </p>
+
+  <table>
+    <tbody>
+    <tr>
+    <td>
+        <img src="images/10.000000_4.000000.png" width="300px">
+        <figcaption>Image 1 from training dataset.</figcaption>
+    </td>
+    <td>
+      <img src="images/download_MSE.png" width="300px">
+        <figcaption>Networks output between image 1 and 2. Notice how it seems to have
+          averaged the two images.
+        </figcaption>
+    </td>
+    <td>
+      <img src="images/6.000000_4.000000.png" width="300px">
+        <figcaption>Image 2 from training dataset.</figcaption>
+    </td>
+    </tr>
+    </tbody>
+    </table>
+
+  <p>To address this problem we used a different loss, known as the Structural SIMilarity (SSIM) index, 
   which fortunately is a differentiable measure of image similarity. Multiple images can have the 
   same MSE when compared to ground truth and yet contain large amounts of noise, blurriness or artifacts, 
-  something that SSIM captures. Using SSIM alone produced a realistic image, with some very strange artifacts 
-  [bar_SSIM.png]. To address those we then combined SSIM and MSE with even weighting as our new objective function. 
+  something that SSIM captures. Using SSIM alone produced a realistic image, with some strange artifacts.</p>
+
+  <div align="middle">
+    <img src="images/bar_SSIM.png" width="400px"/>
+    <figcaption>SSIM loss function produces a stained glass like artifact on the windows.</figcaption>
+    </div>
+
+  
+  <p>To address those we then combined SSIM and MSE with even weighting as our new objective function. 
   This reduced the artifacts but reintroduced the original issue of an architecture unresponsive to network inputs, 
-  instead predicting nearly the same image each time: [high_freq_10_6.mov].</p>
+  instead predicting nearly the same image each time. We also projected the latent space into a 64 dimensional one
+consisiting of high frequency signal as we changed light coordinates.</p>
+[high_freq_10_6.mov]
+
+<div align="middle">
+  <video src="videos/high_freq_10_6_mute.mov" width="300" autoplay controls muted>
+    Your browser does not support the video tag.
+  </video>
+  </div>
+
 
 <h2 align="middle">Results</h2>
 
@@ -176,6 +288,16 @@ lvn_num_clus = lv(n-1)_num_clus / 4
   <figcaption align="middle">Example generated data. </figcaption>
   </div>
   <br>
+
+  <h2>Resources</h2>
+
+
+<a href="https://dl.acm.org/doi/10.1145/2766899">Image based relighting using neural networks | ACM Transactions on Graphics</a><br>
+<a href="https://arxiv.org/abs/1905.00824">Single Image Portrait Relighting</a><br>
+<a href="https://books.google.com/books?id=URbEDwAAQBAJ&printsec=frontcover#v=onepage&q&f=false">Hands-On Generative Adversarial Networks with PyTorch</a><br>
+<a href="https://github.com/eriklindernoren/Keras-GAN/blob/master/cgan/cgan.py">CGAN Code</a><br>
+<a href="https://github.com/eriklindernoren/PyTorch-GAN">PyTorch-GAN: Collection of GAN variants</a><br>
+
     
 </body>
 </html>
