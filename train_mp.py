@@ -142,39 +142,58 @@ if __name__ == "__main__":
         print('File Descriptor')
         pass
 
-    num_processes = 1
+    num_processes = 4
     model_1 = NN().to(device)
-    # model_2 = copy.deepcopy(model_1)
-    # model_3 = copy.deepcopy(model_1)
-    # model_4 = copy.deepcopy(model_1)
-    optimizer_1 = torch.optim.Adam(model_1.parameters(), lr=0.2, betas=(0.9, 0.999))
-    # optimizer_2 = torch.optim.Adam(model_2.parameters(), lr=0.002, betas=(0.9, 0.999))
-    # optimizer_3 = torch.optim.Adam(model_3.parameters(), lr=0.002, betas=(0.9, 0.999))
-    # optimizer_4 = torch.optim.Adam(model_4.parameters(), lr=0.002, betas=(0.9, 0.999))
-    processes = []
+    model_2 = copy.deepcopy(model_1)
+    model_3 = copy.deepcopy(model_1)
+    model_4 = copy.deepcopy(model_1)
+    optimizer_1 = torch.optim.Adam(model_1.parameters(), lr=0.02, betas=(0.9, 0.999))
+    optimizer_2 = torch.optim.Adam(model_2.parameters(), lr=0.02, betas=(0.9, 0.999))
+    optimizer_3 = torch.optim.Adam(model_3.parameters(), lr=0.02, betas=(0.9, 0.999))
+    optimizer_4 = torch.optim.Adam(model_4.parameters(), lr=0.02, betas=(0.9, 0.999))
 
-    # models = [model_1, model_2, model_3, model_4]
-    models = [model_1]
-    # optimizers = [optimizer_1, optimizer_2, optimizer_3, optimizer_4]
-    optimizers = [optimizer_1]
+    models = [model_1, model_2, model_3, model_4]
+    # models = [model_1]
+    optimizers = [optimizer_1, optimizer_2, optimizer_3, optimizer_4]
+    # optimizers = [optimizer_1]
     model_1.share_memory()
+    model_2.share_memory()
+    model_3.share_memory()
+    model_4.share_memory()
 
     save_model(model_1, './check_pt/before.pth')
 
     # for i in range(num_processes):
     #     optimizers[i].zero_grad()
 
-    for j in range(1):
-        for k in range(1):
+    for j in range(8):
+        for k in range(8):
             for i in range(num_processes):
-                p = mp.Process(target=train, args=(models[i], j, k, optimizers[i]))
-                p.start()
-                processes.append(p)
-            for p in processes:
-                p.join()
+                processes = []
+                for q in range(num_processes):
+                    p = mp.Process(target=train, args=(models[i], j * 4 + i, k * 4 + q, optimizers[i]))
+                    p.start()
+                    processes.append(p)
+                for p in processes:
+                    p.join()
 
+    params_1 = model_1.named_parameters()
+    params_2 = model_2.named_parameters()
+    params_3 = model_3.named_parameters()
+    params_4 = model_4.named_parameters()
+
+    dict_params2 = dict(params_2)
+    dict_params3 = dict(params_3)
+    dict_params4 = dict(params_4)
+
+    for name1, param1 in params_1:
+        dict_params4[name1].data.copy_(0.25 * param1.data + 0.25 * dict_params2[name1].data + 0.25 * dict_params3[name1].data + 0.25 * dict_params4[name1].data)
+
+    new_model = NN().to(device)
+    new_model.load_state_dict(dict_params4)
+
+    ###### THIS DOES NOT WORK ######
     # sub_grad = []
-
     # for i in range(1, num_processes):
     #     j = 0
     #     print(sub_grad)
@@ -190,8 +209,9 @@ if __name__ == "__main__":
     # for p in models[0].parameters():
     #     p.grad += sub_grad[j]
     #     j += 1
+    ################################
 
     # optimizer_1.step()
 
-    save_model(model_1, './check_pt/after.pth')
+    save_model(new_model, './check_pt/after.pth')
 
