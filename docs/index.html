@@ -40,15 +40,12 @@
 
 <h1 align="middle">CS 184: Neural Based Image Relighting</h1>
 
-<br><br>
-
 <div>
 
   <div align="middle">
-  <video src="videos/face_generator_only_100epoch.mov" width="300" autoplay controls>
-    Your browser does not support the video tag.
-  </video>
-  </div>
+    <img src="images/bball.png" align="middle" width="800px"/>
+    </div>
+    <br>
 
   <h2 align="middle">Abstract</h2>
 
@@ -62,6 +59,8 @@
   approach generalized across different lighting settings for the same scene.</p>
 
 <h2 align="middle">Technical approach</h2>
+
+<h3>Pixel Based Approach</h3>
 
 <p>The pixel-based approach from the paper is rather straightforward to understand and implement.
   As suggested by the paper, we created a simple 4 layer feedforward neural network with 16 nodes
@@ -82,6 +81,7 @@
     </div>
     <br>
 
+    <h3>Pixel Based Approach (Improvements)</h3>
 
   <p>Although this basic pixel-based approach is remarkable at learning the mapping
     between the inputs and the pixel values, it takes a long time to train a good model.
@@ -151,6 +151,7 @@
   Network Exchange (ONNX) hoping to leverage some of its optimization techniques, but it does not
   improve the performance significantly. Both notebooks are available in the repo.</p>
 
+  <h3>Other Models: DCGAN</h3>
 
   <p>In order to compare the pixel based approach to other methods, we next attempted to utilize
   Deep Convolutional Generative Adversarial Networks (DCGANs) [<a href="https://arxiv.org/pdf/1511.06434.pdf">paper</a>]. These trainable models have
@@ -178,10 +179,10 @@
   the dimensions of z came to represent the x and y coordinates of the light. You can see below that as we
   explore the latent space of images the high dimensional output follows naturally. </p>
 
-  <table>
+  <table width='100%'>
     <tbody>
     <tr>
-    <td>
+    <td align="middle">
         <video src="videos/bball_200.mov" width="300" autoplay controls>
           Your browser does not support the video tag.
         </video>
@@ -189,7 +190,7 @@
           on light location, though shadows on the ball appear slightly "spotty" and don't reflect the smooth shadows of the dataset.
         </figcaption>
     </td>
-    <td>
+    <td  align="middle">
       <video src="videos/cube_high_res_200_epoch.mov" width="300" autoplay controls>
         Your browser does not support the video tag.
       </video>
@@ -201,6 +202,7 @@
     </tbody>
     </table>
 
+    <h3>Other Models: Fully Connected Neural Network</h3>
 
 <p>One issue we faced while using GANs was a large amount of noise in our resulting images.
   To determine if this was due to the generator and discriminator architectures or the GANs themselves
@@ -216,16 +218,16 @@
   Reshaping the output and displaying it as an image reveals near noiseless reconstruction.
   On images with complex shadows or interesting textures the results looked promising. </p>
 
-  <table>
+  <table width='100%'>
     <tbody>
     <tr>
-    <td>
+    <td align="middle">
         <video src="videos/wagon_generator_only.mov" width="300" autoplay controls>
           Your browser does not support the video tag.
         </video>
         <figcaption>Fully connected network generated after 100 epochs of training.</figcaption>
     </td>
-    <td>
+    <td align="middle">
       <video src="videos/plant_generator_only_100epoch_256hidden.mov" width="300" autoplay controls>
         Your browser does not support the video tag.
       </video>
@@ -234,7 +236,7 @@
     </td>
   </tr>
   <tr>
-    <td>
+    <td align="middle">
       <video src="videos/basketball_generator_only_100epoch.mov" width="300" autoplay controls>
         Your browser does not support the video tag.
       </video>
@@ -242,7 +244,7 @@
         are part of the basketball's texture, so the network could not learn to alter them as they were fixed.
       </figcaption>
     </td>
-    <td>
+    <td align="middle">
       <video src="videos/face_generator_only_100epoch.mov" width="300" autoplay controls>
         Your browser does not support the video tag.
       </video>
@@ -258,20 +260,20 @@
   Unfortunately, the model failed to generalize between lighting conditions and instead began
   predicting the mean image which is a common failure case of using a mean squared error function. </p>
 
-  <table>
+  <table width="100%">
     <tbody>
     <tr>
-    <td>
+    <td align="middle">
         <img src="images/10.000000_4.000000.png" width="300px">
         <figcaption>Image 1 from training dataset.</figcaption>
     </td>
-    <td>
+    <td align="middle">
       <img src="images/download_MSE.png" width="300px">
         <figcaption>Networks output between image 1 and 2. Notice how it seems to have
           averaged the two images.
         </figcaption>
     </td>
-    <td>
+    <td align="middle">
       <img src="images/6.000000_4.000000.png" width="300px">
         <figcaption>Image 2 from training dataset.</figcaption>
     </td>
@@ -280,7 +282,7 @@
     </table>
 
   <p>To address this problem we used a different loss, known as the Structural SIMilarity (SSIM) index,
-  which fortunately is a differentiable measure of image similarity. Multiple images can have the
+  which is a measure of image similarity based on the human visual system. Multiple images can have the
   same MSE when compared to ground truth and yet contain large amounts of noise, blurriness or artifacts,
   something that SSIM captures. Using SSIM alone produced a realistic image, with some strange artifacts.</p>
 
@@ -292,8 +294,10 @@
 
   <p>To address those we then combined SSIM and MSE with even weighting as our new objective function.
   This reduced the artifacts but reintroduced the original issue of an architecture unresponsive to network inputs,
-  instead predicting nearly the same image each time. We also projected the latent space into a 64 dimensional one
-consisiting of high frequency signal as we changed light coordinates.</p>
+  instead predicting nearly the same image each time. We also projected the latent space into a 64-dimensional space
+consisiting of high frequency signal generated with sin and cos functions to possibly aid the network in recreating
+high frequency data in the output image. This did introduce more variability in the output but its hard to attribute
+that to the network learning a useful model of the lighting in the scene.</p>
 
 <div align="middle">
   <video src="videos/high_freq_10_6_mute.mov" width="300" autoplay controls muted>
@@ -304,7 +308,7 @@ consisiting of high frequency signal as we changed light coordinates.</p>
 
 <h2 align="middle">Results</h2>
 
-<table style="width=100%">
+<table width="100%">
     <tr>
         <td align="middle">
           <video src="videos/sphere_32.mov" width="500" autoplay controls>
@@ -319,30 +323,28 @@ consisiting of high frequency signal as we changed light coordinates.</p>
     </tr>
 </table>
 
-<table style="width=100%">
+<table width="100%">
     <tr>
         <td align="middle">
-          <video src="videos/basketball_128_200.mov" width="450" autoplay controls>
+          <video src="videos/basketball_128_200.mov" width="340" autoplay controls>
             Your browser does not support the video tag.
           </video>
           <figcaption>Pixel-based approach with basketball relighting after 200 epochs of training.</figcaption>
-        <td align="middle">
-          <video src="videos/basketball_grountruth.mov" width="425" autoplay controls>
+        </td>
+        <td  align="middle">
+          <video src="videos/basketball_grountruth.mov" width="320" autoplay controls>
             Your browser does not support the video tag.
           </video>
           <figcaption>Ground Truth.</figcaption>
-    </tr>
-</table>
-
-<table style="width=100%">
-    <tr>
+        </tr>
+        <tr>
         <td align="middle">
-          <video src="videos/home_256.mov" width="450" autoplay controls>
+          <video src="videos/home_256.mov" width="340" autoplay controls>
             Your browser does not support the video tag.
           </video>
           <figcaption>The specular light is not captured.</figcaption>
         <td align="middle">
-          <video src="videos/home_groundtruth.mov" width="475" autoplay controls>
+          <video src="videos/home_groundtruth.mov" width="375" autoplay controls>
             Your browser does not support the video tag.
           </video>
           <figcaption>Ground Truth.</figcaption>
@@ -353,6 +355,8 @@ consisiting of high frequency signal as we changed light coordinates.</p>
 
 </div>
 
+<h2>Conclusion</h2>
+
 <p>Our model generates realistic lighting with acceptable artifacts.
   Note that the shadow the model generated is not perfect, and we
   believe adaptive clustering could help reducing the noise. Given
@@ -361,24 +365,23 @@ consisiting of high frequency signal as we changed light coordinates.</p>
   infeasible to test and tune the model. We expect the training would take
   4-5 days for a 256x256 image. Overall, we were surprised that a complex
   scene can be easily captured by a simple neural network, and this observation could lead
-  to a further project focusing on image compression using neural network. 
-By combining the strengths of the pixel based method in learning actual light transfer dynamics of the
-scene with generative adversarial networks ability to capture the full distribution of training images, we believe
-a stronger image relighting architecture could be created.</p>
+  to a future project focusing on image compression using neural networks. 
+</p>
 
   <h2>Future Work</h2>
   <p>As suggested by Ben Mildenhall, network-based approach relighting tends to suffer from
    spectral bias, which causes the failure of capturing high frequency specular light.
-  In the future, we would like to add sinusoidal waves as a pass to the inputs of the neural
-  network to map lower dimension inputs to higher dimension in order to capture the high frequency
-  light. In addition, we'd like to try larger filters in our convolutional networks in the GAN to
-reduce image noise. </p>
+  In the future, we would like to further explore adding sinusoidal waves as a pass to the inputs of the neural
+  network to map lower dimension/low frequency inputs to higher dimension/high frequency in order to capture the high frequency
+  dynamics of the light. In addition, we'd like to try larger filters in our convolutional networks in the GAN to
+reduce image noise. Finally, by combining the strengths of the pixel based method in learning actual light transfer dynamics of the
+scene with generative adversarial networks ability to capture the full distribution of training images, we believe
+a stronger image relighting architecture could be created by fusing the two techniques.</p>
 
   <h2>Video Link</h2>
   <a href="https://youtu.be/w4Ciov0PErI">Video</a>
 
   <h2>Resources</h2>
-
 
 <a href="https://dl.acm.org/doi/10.1145/2766899">Image based relighting using neural networks | ACM Transactions on Graphics</a><br>
 <a href="https://arxiv.org/abs/1905.00824">Single Image Portrait Relighting</a><br>
