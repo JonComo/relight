@@ -363,18 +363,22 @@ consisiting of high frequency signal as we changed light coordinates.</p>
   Note that the shadow the model generated is not perfect, and we
   believe adaptive clustering could help reducing the noise. Given
   the time and resource constraints of the project, we did not train a model with
-  adaptive clustering in high resolution because it becomes immediately
+  adaptive clustering in high resolution because it becomes 
   infeasible to test and tune the model. We expect the training would take
-  4-5 days for a 256x256 image. Overall, we are really surprised that a complex
+  4-5 days for a 256x256 image. Overall, we were surprised that a complex
   scene can be easily captured by a simple neural network, and this observation could lead
-  to a further project focusing on image compression using neural network.</p>
+  to a further project focusing on image compression using neural network. 
+By combining the strengths of the pixel based method in learning actual light transfer dynamics of the
+scene with generative adversarial networks ability to capture the full distribution of training images, we believe
+a stronger image relighting architecture could be created.</p>
 
   <h2>Future Work</h2>
   <p>As suggested by Ben Mildenhall, network-based approach relighting tends to suffer from
-  the spectral bias, which causes the failure of capturing high frequency specular light.
+   spectral bias, which causes the failure of capturing high frequency specular light.
   In the future, we would like to add sinusoidal waves as a pass to the inputs of the neural
   network to map lower dimension inputs to higher dimension in order to capture the high frequency
-  light.</p>
+  light. In addition, we'd like to try larger filters in our convolutional networks in the GAN to
+reduce image noise. </p>
 
 
   <h2>Resources</h2>
@@ -388,8 +392,11 @@ consisiting of high frequency signal as we changed light coordinates.</p>
 
 <h2>Contribution</h2>
 
-<p>Billy Chau: generated the dataset using blender; implemented and tuned the model from the paper in Pytorch, including the adaptive clustering enhancement;
-  tried to accelerate the Pytorch model by running multi-processes and ONNX.</p>
+<p>Billy Chau: Wrote the script to generate the dataset using blender; implemented and tuned the pixel-based model from the paper in Pytorch, including the adaptive clustering enhancement;
+  tried to accelerate the Pytorch model by running multi-processes and ONNX. Contributed to the writeup, recorded audio for slides
+  and worked on slideshow presentation. </p>
+<p>Jon Como: Implemented deep convolutional generative adversarial network and fully connected network. Explored different architectures in the DCGAN and different loss functions including structural similarity index based on the human visual system. Contributed to the writeup, recorded and edited the video presentation and created presentation slides.
+</p>
 
 </body>
 </html>
